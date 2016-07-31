@@ -1,0 +1,12 @@
+{
+    "autoload": {
+        "psr-4": {
+            "Acme\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Test\\Acme\\": "test/"
+        }
+    }
+}

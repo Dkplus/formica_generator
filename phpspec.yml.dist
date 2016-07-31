@@ -1,0 +1,7 @@
+suites:
+    dkplus_suite:
+        namespace: Dkplus\Formica
+        psr4_prefix: Dkplus\Formica
+
+extensions:
+    Memio\SpecGen\MemioSpecGenExtension: ~

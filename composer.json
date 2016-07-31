@@ -1,0 +1,39 @@
+{
+    "name": "dkplus/formica",
+    "license": "MIT",
+    "description": "Code generator for domain driven design",
+    "authors": [
+        {
+            "name": "Oskar Pfeifer-Bley",
+            "email": "oskar@programming-php.net"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Dkplus\\Formica\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "spec\\Dkplus\\Formica\\": "spec/",
+            "Feature\\Dkplus\\Formica\\": "features/bootstrap/"
+        }
+    },
+    "require": {
+        "symfony/console": "^3.1",
+        "dkplus/annotations": "^0.1.0",
+        "gnugat/redaktilo": "^1.7",
+        "memio/memio": "^1.1",
+        "dkplus/reflections": "dev-master@dev",
+        "memio/twig-template-engine": "dev-master as v1.3.0",
+        "memio/model": "dev-master as v1.5.0"
+    },
+    "require-dev": {
+        "phpspec/phpspec": "^3.0",
+        "memio/spec-gen": "^0.6.1",
+        "behat/behat": "^3.1"
+    },
+    "config": {
+        "bin-dir": "bin"
+    }
+}
