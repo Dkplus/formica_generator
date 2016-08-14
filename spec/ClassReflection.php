@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace spec\Dkplus\Formica;
 
 use Dkplus\Reflections\Builder;
@@ -16,17 +17,19 @@ class ClassReflection
         $structure = $file->getStructure();
         if (! $structure instanceof Object && ! $structure instanceof Contract) {
             throw new InvalidArgumentException(
-                "There is neither a class nor an interface within " . $file->getFilename()
+                'There is neither a class nor an interface within ' . $file->getFilename()
             );
         }
 
-        $fileName = sys_get_temp_dir() . '/' . uniqid();
+        $fileName = sys_get_temp_dir() . '/' . uniqid('formica_', true);
         file_put_contents($fileName, Build::prettyPrinter()->generateCode($file));
 
         /* @var $reflector \Dkplus\Reflections\AutoloadingReflector */
         $reflector = Builder::create()->reflector(Builder::create()->typeFactory());
         $reflector->addClassInFile($structure->getFullyQualifiedName(), $fileName);
 
-        return $reflector->reflectClass($structure->getFullyQualifiedName());
+        $reflection = $reflector->reflectClass($structure->getFullyQualifiedName());
+        unlink($fileName);
+        return $reflection;
     }
 }

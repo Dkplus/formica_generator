@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace spec\Dkplus\Formica;
 
 use Dkplus\Annotations\DDD\DomainEvent;
@@ -33,15 +34,6 @@ class DomainEventGeneratorSpec extends ObjectBehavior
 
         $this->generate("Acme\\UserHasBeenCreated", []);
     }
-
-    function it_generates_a_final_class(FileWriter $writer, ClassLocations $locations)
-    {
-        $locations->suggestFile('Acme\\UserHasBeenCreated')->willReturn('/var/www/src/UserHasBeenCreated.php');
-        $writer->write($this->finalClass())->shouldBeCalled();
-
-        $this->generate("Acme\\UserHasBeenCreated", []);
-    }
-
 
     function it_generates_a_occurredOn_property(FileWriter $writer, ClassLocations $locations)
     {
@@ -98,19 +90,12 @@ class DomainEventGeneratorSpec extends ObjectBehavior
         });
     }
 
-    private function finalClass() : Argument\Token\TokenInterface
-    {
-        return Argument::that(function (File $file) {
-            return ClassReflection::fromFile($file)->isFinal();
-        });
-    }
-
     private function classWithProperty(string $property, string $type) : Argument\Token\TokenInterface
     {
         return Argument::that(function (File $file) use ($property, $type) {
             $properties = ClassReflection::fromFile($file)->properties();
             return $properties->contains($property)
-                && $properties->named($property)->type() == $type;
+                && $type === (string) $properties->named($property)->type();
         });
     }
 
@@ -120,7 +105,7 @@ class DomainEventGeneratorSpec extends ObjectBehavior
             $methods = ClassReflection::fromFile($file)->methods();
             return $methods->contains($method)
                 && $methods->named($method)->isPublic()
-                && $methods->named($method)->returnType() == $returnType;
+                && $returnType === (string) $methods->named($method)->returnType();
         });
     }
 
@@ -137,10 +122,10 @@ class DomainEventGeneratorSpec extends ObjectBehavior
 
             $parameters = $methods->named('__construct')->parameters();
             foreach (array_keys($arguments) as $i => $each) {
-                if ($parameters->atPosition($i)->name() != $each) {
+                if ($parameters->atPosition($i)->name() !== $each) {
                     return false;
                 }
-                if ($arguments[$each] != $parameters->atPosition($i)->type()) {
+                if ($arguments[$each] !== (string) $parameters->atPosition($i)->type()) {
                     return false;
                 }
             }

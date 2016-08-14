@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Feature\Dkplus\Formica;
 
 use Behat\Behat\Context\SnippetAcceptingContext;
@@ -10,7 +11,6 @@ use Dkplus\Reflections\AutoloadingReflector;
 use Dkplus\Reflections\Builder;
 use Error;
 use Memio\Memio\Config\Build;
-use phpDocumentor\Reflection\Types\Mixed;
 
 class FeatureContext implements SnippetAcceptingContext
 {
@@ -69,6 +69,7 @@ class FeatureContext implements SnippetAcceptingContext
 
     /**
      * @Then the class :class should exist in the file :filePath
+     * @throws Error
      */
     public function theClassShouldExistInTheFile(string $class, string $filePath)
     {
@@ -82,6 +83,7 @@ class FeatureContext implements SnippetAcceptingContext
 
     /**
      * @Then the class :class should be annotated with :annotation
+     * @throws Error
      */
     public function theClassShouldBeAnnotatedWith(string $class, string $annotation)
     {
@@ -96,6 +98,7 @@ class FeatureContext implements SnippetAcceptingContext
 
     /**
      * @Then the class :class should be constructed with :count parameters:
+     * @throws Error
      */
     public function theClassShouldBeConstructedWithParameters($class, $count, TableNode $table)
     {
@@ -105,10 +108,10 @@ class FeatureContext implements SnippetAcceptingContext
         }
 
         $constructor = $classReflection->methods()->named('__construct');
-        if ($count != $constructor->countParameters()) {
+        if ((int) $count !== $constructor->countParameters()) {
             throw new Error(
                 "Constructor of class $class was expected to have $count parameters but has "
-                . $constructor->countParameters() . " parameters"
+                . $constructor->countParameters() . ' parameters'
             );
         }
 
@@ -130,17 +133,18 @@ class FeatureContext implements SnippetAcceptingContext
 
     /**
      * @Then the class :class should have :count methods:
+     * @throws Error
      */
     public function theClassShouldHaveMethods($className, $count, TableNode $table)
     {
         $class = $this->reflector->reflectClass($className);
         $methods = $class->methods();
         if ($methods->contains('__construct')) {
-            $count += 1;
+            ++$count;
         }
         if ($methods->size() !== $count) {
             throw new Error(
-                "Class $className was expected to have $count methods but has " . $methods->size() . " methods"
+                "Class $className was expected to have $count methods but has " . $methods->size() . ' methods'
             );
         }
         foreach (array_column($table->getColumnsHash(), 'method') as $eachMethodName) {
@@ -152,11 +156,60 @@ class FeatureContext implements SnippetAcceptingContext
 
     /**
      * @Given the class :class should be final
+     * @throws Error
      */
     public function theClassShouldBeFinal($className)
     {
         if (! $this->reflector->reflectClass($className)->isFinal()) {
             throw new Error("Class $className is not final");
         }
+    }
+
+    /**
+     * @Given domain events are configured to implement :interfaceName
+     */
+    public function domainEventsAreConfiguredToImplement($interfaceName)
+    {
+        file_put_contents(self::TEST_DIR, <<<"YAML"
+domain_events:
+    implement: ["$interfaceName"]
+YAML
+        );
+    }
+
+    /**
+     * @When I generate a domain event :className
+     */
+    public function iGenerateADomainEvent($className)
+    {
+        $generator = new DomainEventGenerator($this->fileWriter, $this->classLocations());
+        $generator->generate($className, []);
+    }
+
+    /**
+     * @Then the class :className should implement :interfaceName
+     * @throws Error
+     */
+    public function theClassShouldImplement($className, $interfaceName)
+    {
+        if (! $this->reflector->reflectClass($className)->implementsInterface($interfaceName)) {
+            throw new Error("Class $className does not implement $interfaceName");
+        }
+    }
+
+    /**
+     * @Given domain events are configured to extend :className
+     */
+    public function domainEventsAreConfiguredToExtend($className)
+    {
+        throw new PendingException();
+    }
+
+    /**
+     * @Then the class :className should extend :extendedClassName
+     */
+    public function theClassShouldExtend($className, $extendedClassName)
+    {
+        throw new PendingException();
     }
 }

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace Dkplus\Formica;
 
 use Dkplus\Annotations\DDD\DomainEvent;
@@ -14,7 +15,7 @@ use Memio\Model\Phpdoc\StructurePhpdoc;
 use Memio\Model\Phpdoc\VariableTag;
 use Memio\Model\Property;
 
-final class DomainEventGenerator
+class DomainEventGenerator
 {
     /** @var FileWriter */
     private $fileWriter;
@@ -30,7 +31,7 @@ final class DomainEventGenerator
 
     public function generate($class, array $properties)
     {
-        $classModel = Object::make($class)->makeFinal();
+        $classModel = Object::make($class);
         $file = File::make($this->locations->suggestFile($class))->setStructure($classModel);
 
         $constructor = Method::make('__construct');
@@ -52,7 +53,8 @@ final class DomainEventGenerator
             $classModel->addMethod(
                 Method::make($eachName)
                     ->setBody(str_pad('', 8, ' ') . "return \$this->$eachName;")
-                    ->setReturnType($eachType));
+                    ->setReturnType($eachType)
+            );
         }
         foreach ($properties as $eachName => $eachType) {
             $constructor->addArgument(Argument::make($eachType, $eachName));
